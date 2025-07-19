@@ -31,11 +31,11 @@ namespace GroupApp
         {
             string connectionString = ConfigurationManager.ConnectionStrings["DatabaseConnection"].ConnectionString;
             string query = @"
-            SELECT c.CourseName
-            FROM LogIn l
-            INNER JOIN StudentCourses sc ON l.StudentID = sc.StudentID
-            INNER JOIN Courses c ON sc.CourseID = c.CourseID
-            WHERE l.Username = @email";
+    SELECT c.CourseID, c.CourseName
+    FROM LogIn l
+    INNER JOIN StudentCourses sc ON l.StudentID = sc.StudentID
+    INNER JOIN Courses c ON sc.CourseID = c.CourseID
+    WHERE l.Username = @email";
 
             CourseButtonPanel.Children.Clear();
 
@@ -46,9 +46,24 @@ namespace GroupApp
                 conn.Open();
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
+                    if (!reader.HasRows)
+                    {
+                        // No courses found for the student
+                        MessageBox.Show("No courses found for this student.");
+                        return; // Exit the method early if no courses are found
+                    }
+
                     while (reader.Read())
                     {
-                        string courseName = reader.GetString(0);
+                        // Check if courseId or courseName is null
+                        if (reader.IsDBNull(0) || reader.IsDBNull(1))
+                        {
+                            MessageBox.Show("Invalid data retrieved from the database.");
+                            continue;
+                        }
+
+                        string courseName = reader.GetString(1);
+                        int courseId = reader.GetInt32(0); // Fetch the courseId
 
                         Button courseBtn = new Button
                         {
@@ -62,10 +77,14 @@ namespace GroupApp
                             Foreground = Brushes.White
                         };
 
+                        // When a course button is clicked, navigate to Software_Course window
                         courseBtn.Click += (s, e) =>
                         {
                             MessageBox.Show($"Opening {courseName}...");
-                            // TODO: Add navigation to course details window
+                            // Pass the courseId to Software_Course window
+                            Software_Course courseWindow = new Software_Course(courseId, studentEmail);
+                            courseWindow.Show();
+                            this.Close(); // Close the current window (System_Main)
                         };
 
                         CourseButtonPanel.Children.Add(courseBtn);
@@ -95,7 +114,10 @@ namespace GroupApp
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            Close(); // Corrected the method call to close the current window
+            this.Hide();
+            MainWindow window = new MainWindow();
+            window.Show();
+            this.Close();
         }
     }
 
