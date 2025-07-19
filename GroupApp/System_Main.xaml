@@ -1,0 +1,149 @@
+﻿<Window x:Class="GroupApp.System_Main"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GroupApp"
+        mc:Ignorable="d"
+        Title="System_Main" Height="450" Width="800"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Background="Transparent"
+        AllowsTransparency="True">
+
+    <Border CornerRadius="12">
+        <Border.Background>
+            <ImageBrush ImageSource="/Images/bg5.jpg"/>
+        </Border.Background>
+
+
+        <Border CornerRadius="12"
+                    BorderThickness="2"
+                    Opacity="0.9">
+
+            <Border.BorderBrush>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#462AD8" Offset="0"/>
+                    <GradientStop Color="#83A2BB" Offset="0.5"/>
+                    <GradientStop Color="#8A16C1" Offset="1"/>
+
+                </LinearGradientBrush>
+            </Border.BorderBrush>
+
+            <Grid>
+                <Grid.Background>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF1A1C24" Offset="0"/>
+                        <!-- Deep navy shadows -->
+                        <GradientStop Color="#FF3D4F40" Offset="0.4"/>
+                        <!-- Muted forest green -->
+                        <GradientStop Color="#FF768D56" Offset="0.7"/>
+                        <!-- Mossy olive green -->
+                        <GradientStop Color="#FFD8C88F" Offset="1"/>
+                        <!-- Warm desktop glow -->
+                    </LinearGradientBrush>
+                </Grid.Background>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition/>
+
+                </Grid.RowDefinitions>
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="25"/>
+                        <ColumnDefinition Width="25"/>
+                        <ColumnDefinition Width="5"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="STUDENT MANAGEMENT SYSTEM"
+                       Foreground="DarkGray"
+                       FontSize="20"
+                       FontFamily="Montserrat"
+                       Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Margin="10,0,-363,0" FontWeight="Bold"/>
+                    <Button x:Name="btnMinimize"
+                    Background="#FF00FF32"
+                    BorderThickness="0"
+                    Content="-"
+                    Foreground="Black"
+                    FontSize="16"
+                    FontFamily="Montserrat"
+                    Cursor="Hand"
+                    Grid.Column="2"
+                    Click="btnMinimize_Click" Margin="677,0,-705,0" Height="30" VerticalAlignment="Center">
+                    </Button>
+                    <Button x:Name="btnClose"
+                            Background="Black"
+                            BorderThickness="0"
+                            Content="X"
+                            Foreground="White"
+                            FontSize="16"
+                            FontFamily="Montserrat"
+                            Cursor="Hand"
+                            Grid.Column="2"
+                            Click="btnClose_Click" Margin="711,-1,-739,1">
+                    </Button>
+
+                </Grid>
+
+
+                <StackPanel x:Name="CourseButtonPanel"
+            Orientation="Vertical"
+            Margin="153,40,0,0"
+            Grid.Row="1"
+            Width="633"
+            HorizontalAlignment="Left">
+                </StackPanel>
+
+
+
+                <Grid Background ="#FF1A1611" HorizontalAlignment="Left" Height="396" Margin="10,0,0,0" Grid.Row="1" VerticalAlignment="Center" Width="138"/>
+                <Button Content="PROFILE"
+                        Background="#FF788754"
+        Foreground="White"
+        BorderBrush="Transparent"
+        FontWeight="Bold"
+        FontSize="16"
+        Padding="10,5"
+        Cursor="Hand"
+                        FontFamily="Montserrat"
+                        HorizontalAlignment="Left" Height="60" Margin="17,21,0,0" Grid.Row="1" VerticalAlignment="Top" Width="124">
+
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Background" Value="#FF283B5D"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#FF3A507A"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Background" Value="#FF1C2D4A"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button Content="ACTIVITIES" 
+                        FontSize="16"
+                        FontFamily="Montserrat"
+                        HorizontalAlignment="Left" Height="60" Margin="17,86,0,0" Grid.Row="1" VerticalAlignment="Top" Width="124"/>
+                <Button Content="GRADES" 
+                        FontSize="16"
+                        FontFamily="Montserrat"
+                        HorizontalAlignment="Left" Height="60" Margin="17,151,0,0" Grid.Row="1" VerticalAlignment="Top" Width="124"/>
+                <Button Content="SIGN OUT" 
+                        FontSize="16"
+                        FontFamily="Montserrat"
+                        HorizontalAlignment="Left" Height="60" Margin="16,216,0,0" Grid.Row="1" VerticalAlignment="Top" Width="124" Click="Button_Click_1"/>
+
+
+            </Grid>
+
+        </Border>
+    </Border>
+</Window>
