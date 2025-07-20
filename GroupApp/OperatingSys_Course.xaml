@@ -1,12 +1,11 @@
-﻿<Window x:Class="GroupApp.Software_Course"
+﻿<Window x:Class="GroupApp.OperatingSys_Course"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GroupApp"
         mc:Ignorable="d"
-        Title="Software_Course" Height="600" Width="1000">
-
+        Title="OperatingSys_Course" Height="600" Width="1000">
     <Window.Resources>
         <!-- FadeIn animation for ActivityPopup -->
         <Storyboard x:Key="FadeInStoryboard">
@@ -43,7 +42,7 @@
                 <!-- Header with Course Name -->
                 <StackPanel Orientation="Horizontal" Background="#FFFFFF" Margin="0,10" Grid.Column="0">
                     <Button Content="X" Width="50" Height="50" Background="#FF6A00" Foreground="White" FontWeight="Bold" Margin="0,0,10,0" Click="Button_Click_1" />
-                    <TextBlock Text="SOFTWARE DESIGN" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="10,0"/>
+                    <TextBlock Text="Operating Systems" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="10,0"/>
                     <Button Content="OPEN" Width="70" Height="30" Background="#3C8D0D" Foreground="White" HorizontalAlignment="Right" Margin="10,0"/>
                 </StackPanel>
 

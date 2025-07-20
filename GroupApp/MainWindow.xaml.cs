@@ -86,7 +86,7 @@ namespace GroupApp
                             else if (username.EndsWith("@mymail.ph", StringComparison.OrdinalIgnoreCase))
                             {
                                 // TEACHER window
-                                Teacher_Main teacherWindow = new Teacher_Main();
+                                Teacher_Main teacherWindow = new Teacher_Main(username);
                                 teacherWindow.Show();
                             }
                             else

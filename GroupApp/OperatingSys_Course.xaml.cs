@@ -19,13 +19,13 @@ using System.Windows.Shapes;
 namespace GroupApp
 {
     /// <summary>
-    /// Interaction logic for Software_Course.xaml
+    /// Interaction logic for OperatingSys_Course.xaml
     /// </summary>
-    public partial class Software_Course : Window
+    public partial class OperatingSys_Course : Window
     {
         private int courseId;
         private string studentEmail;
-        public Software_Course(int courseId, string studentEmail)
+        public OperatingSys_Course(int courseId, string studentEmail)
         {
             InitializeComponent();
             this.courseId = courseId;
@@ -72,7 +72,7 @@ namespace GroupApp
                 CourseContentStack.Visibility = Visibility.Collapsed;
             }
         }
-      
+
 
         private void DiscussionButton_Click(object sender, RoutedEventArgs e)
         {
@@ -152,10 +152,5 @@ namespace GroupApp
             // Load the activities
             LoadCourseActivities(courseId, "Quiz");
         }
-        
-
-
-
-
     }
 }

@@ -77,13 +77,24 @@ namespace GroupApp
                             Foreground = Brushes.White
                         };
 
-                        // When a course button is clicked, navigate to Software_Course window
+                        // When a course button is clicked, navigate to the appropriate course window
                         courseBtn.Click += (s, e) =>
                         {
                             MessageBox.Show($"Opening {courseName}...");
-                            // Pass the courseId to Software_Course window
-                            Software_Course courseWindow = new Software_Course(courseId, studentEmail);
-                            courseWindow.Show();
+
+                            if (courseName == "Software Design")
+                            {
+                                // If course is Software Design, open Software_Course
+                                Software_Course courseWindow = new Software_Course(courseId, studentEmail);
+                                courseWindow.Show();
+                            }
+                            else if (courseName == "Operating Systems")
+                            {
+                                // If course is Operating System, open OperatingSys_Course
+                                OperatingSys_Course courseWindow = new OperatingSys_Course(courseId, studentEmail);
+                                courseWindow.Show();
+                            }
+
                             this.Close(); // Close the current window (System_Main)
                         };
 
