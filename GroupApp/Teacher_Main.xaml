@@ -17,17 +17,15 @@
             <ImageBrush ImageSource="/Images/bg5.jpg"/>
         </Border.Background>
 
-
         <Border CornerRadius="12"
-                    BorderThickness="2"
-                    Opacity="0.9">
+                BorderThickness="2"
+                Opacity="0.9">
 
             <Border.BorderBrush>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                     <GradientStop Color="#462AD8" Offset="0"/>
                     <GradientStop Color="#83A2BB" Offset="0.5"/>
                     <GradientStop Color="#8A16C1" Offset="1"/>
-
                 </LinearGradientBrush>
             </Border.BorderBrush>
 
@@ -40,14 +38,14 @@
                         <GradientStop Color="#FF8FC4D8" Offset="1"/>
                     </LinearGradientBrush>
                 </Grid.Background>
+
                 <Grid.RowDefinitions>
                     <RowDefinition Height="30"/>
                     <RowDefinition/>
-
                 </Grid.RowDefinitions>
 
+                <!-- Top Bar with Buttons -->
                 <Grid>
-
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="25"/>
                         <ColumnDefinition Width="25"/>
@@ -69,8 +67,7 @@
                     FontFamily="Montserrat"
                     Cursor="Hand"
                     Grid.Column="2"
-                    Click="btnMinimize_Click" Margin="677,0,-705,0" Height="30" VerticalAlignment="Center">
-                    </Button>
+                    Click="btnMinimize_Click" Margin="677,0,-705,0" Height="30" VerticalAlignment="Center"/>
                     <Button x:Name="btnClose"
                             Background="Black"
                             BorderThickness="0"
@@ -80,87 +77,136 @@
                             FontFamily="Montserrat"
                             Cursor="Hand"
                             Grid.Column="2"
-                            Click="btnClose_Click" Margin="711,-1,-739,1">
-                    </Button>
-
+                            Click="btnClose_Click" Margin="711,-1,-739,1"/>
                 </Grid>
-                <Button Content="SOFTWARE DESIGN"
-                        BorderThickness="3"
-                        BorderBrush="Black"
-                        Foreground="White"
-                        FontSize="16"
-                        FontFamily="Montserrat"
-                        Cursor="Hand"
-                        HorizontalAlignment="Left" Height="70" Margin="153,21,0,0" Grid.Row="1" VerticalAlignment="Top" Width="633" Background="Transparent" Click="Button_Click" FontWeight="Bold" />
 
-                <Button Content="FUNDAMENTALS OF ELECTRONIC CIRCUITS" 
-                        Background="Transparent"
-                        BorderThickness="3"
-                        Foreground="White"
-                        FontSize="16"
-                        FontFamily="Montserrat"
-                        Cursor="Hand" HorizontalAlignment="Left" Height="70" Margin="153,96,0,0" Grid.Row="1" VerticalAlignment="Top" Width="633" BorderBrush="Black" FontWeight="Bold" Click="Button_Click_1"/>
+                <!-- Main Buttons (Software, Courses, etc.) -->
+                <Button Content="SOFTWARE DESIGN" BorderThickness="3" BorderBrush="Black" Foreground="White" FontSize="16" FontFamily="Montserrat" Cursor="Hand" HorizontalAlignment="Left" Height="70" Margin="153,21,0,0" Grid.Row="1" VerticalAlignment="Top" Width="633" Background="Transparent" Click="Button_Click" FontWeight="Bold"/>
+                <Button Content="FUNDAMENTALS OF ELECTRONIC CIRCUITS" Background="Transparent" BorderThickness="3" Foreground="White" FontSize="16" FontFamily="Montserrat" Cursor="Hand" HorizontalAlignment="Left" Height="70" Margin="153,96,0,0" Grid.Row="1" VerticalAlignment="Top" Width="633" BorderBrush="Black" FontWeight="Bold" Click="Button_Click_1"/>
+                <Button Content="OPERATING SYSTEM" BorderThickness="3" Foreground="White" FontSize="16" FontFamily="Montserrat" Cursor="Hand" HorizontalAlignment="Left" Height="70" Grid.Row="1" VerticalAlignment="Center" Width="633" Margin="153,0,0,0" Background="{x:Null}" BorderBrush="Black" FontWeight="Bold" Click="Button_Click_2"/>
 
-                <Button Content="OPERATING SYSTEM"
-                       
-                        BorderThickness="3"
-                        Foreground="White"
-                        FontSize="16"
+                <!-- DELETE ACTIVITY Button -->
+                <Button Content="DELETE ACTIVITY" 
+                        FontSize="14"
                         FontFamily="Montserrat"
-                        Cursor="Hand" HorizontalAlignment="Left" Height="70" Grid.Row="1" VerticalAlignment="Center" Width="633" Margin="153,0,0,0" Background="{x:Null}" BorderBrush="Black" FontWeight="Bold" Click="Button_Click_2"/>
-                <Grid Background ="#FF1A1611" HorizontalAlignment="Left" Height="396" Margin="10,0,0,0" Grid.Row="1" VerticalAlignment="Center" Width="138"/>
-                <Button Content="PROFILE"
-                        Background="#FF2931F2"
-        Foreground="White"
-        BorderBrush="Transparent"
-        FontWeight="Bold"
-        FontSize="16"
-        Padding="10,5"
-        Cursor="Hand"
-                        FontFamily="Montserrat"
-                        HorizontalAlignment="Left" Height="60" Margin="17,21,0,0" Grid.Row="1" VerticalAlignment="Top" Width="124">
+                        HorizontalAlignment="Left" Height="60" Margin="17,163,0,0" Grid.Row="1" VerticalAlignment="Top" Width="124" FontWeight="Bold" 
+                        Click="ShowDeleteActivitySidebar"/>
 
-                    <Button.Style>
-                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-                            <Setter Property="Background" Value="#FF283B5D"/>
-                            <Setter Property="Foreground" Value="White"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#FF3A507A"/>
-                                </Trigger>
-                                <Trigger Property="IsPressed" Value="True">
-                                    <Setter Property="Background" Value="#FF1C2D4A"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
-                </Button>
+                <!-- Profile Button -->
 
+                <!-- Sidebar for Activities (Initially Hidden, Floating Over the Content) -->
+                <Canvas x:Name="ActivitySidebar" HorizontalAlignment="Right" VerticalAlignment="Top" Width="350" Height="Auto" Visibility="Collapsed" Panel.ZIndex="10" Margin="0,0,0,0">
+                    <Border Background="#F5F5F5" Padding="10">
+                        <StackPanel>
+                            <!-- Title -->
+                            <TextBlock Text="Enter Activity" FontSize="18" FontWeight="Bold" Margin="10" Foreground="#333" />
+
+                            <!-- Activity TextBox -->
+                            <TextBox x:Name="ActivityTextBox" Width="300" Height="40" Margin="10" Padding="10" FontSize="16" BorderBrush="#4A90E2" BorderThickness="2" Background="White"/>
+
+                            <!-- Section ComboBox -->
+                            <ComboBox x:Name="SectionComboBox" Width="300" Height="40" Margin="10" Padding="10" FontSize="16" BorderBrush="#4A90E2" BorderThickness="2" Background="White">
+                                <ComboBoxItem Content="Course Work" />
+                                <ComboBoxItem Content="Quiz" />
+                                <ComboBoxItem Content="Discussion" />
+                            </ComboBox>
+
+                            <!-- Course ComboBox -->
+                            <ComboBox x:Name="CourseComboBox" Width="300" Height="40" Margin="10" Padding="10" FontSize="16" BorderBrush="#4A90E2" BorderThickness="2" Background="White"/>
+
+                            <!-- Score Limit TextBox -->
+                            <TextBox x:Name="ScoreLimitTextBox" Width="300" Height="40" Margin="10" Padding="10" FontSize="16" BorderBrush="#4A90E2" BorderThickness="2" Background="White"/>
+
+                            <!-- Submit Button -->
+                            <Button Content="Submit Activity" Width="300" Height="45" Margin="10" FontSize="16" FontWeight="Bold" Background="#4A90E2" Foreground="White" BorderBrush="#4A90E2" BorderThickness="2" Padding="10" Cursor="Hand" Click="SubmitActivity_Click"/>
+                        </StackPanel>
+                    </Border>
+                </Canvas>
+
+                <!-- Sidebar for Delete Activity (Initially Hidden) -->
+                <Canvas x:Name="DeleteActivitySidebar" HorizontalAlignment="Right" VerticalAlignment="Top" Width="350" Height="Auto" Visibility="Collapsed" Panel.ZIndex="10" Margin="0,0,0,0">
+                    <Border Background="#F5F5F5" Padding="10">
+                        <StackPanel>
+                            <!-- Collapse Button -->
+                            <Button Content="BACK" Width="80" Height="30" Margin="10" Click="ToggleDeleteActivitySidebar" HorizontalAlignment="Right"/>
+
+                            <!-- Title -->
+                            <TextBlock Text="Delete Activity" FontSize="18" FontWeight="Bold" Margin="10" Foreground="#333" />
+
+                            <!-- ListBox for Activities to Delete -->
+                            <ListBox x:Name="ActivityDeleteListBox" Width="300" Height="200" Margin="10" BorderBrush="#4A90E2" BorderThickness="2" Background="White" FontSize="14">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding ActivityName}" VerticalAlignment="Center" Width="200"/>
+                                            <Button Content="Delete" Width="60" Height="30" Margin="10,0,0,0" Click="DeleteActivity_Click" HorizontalAlignment="Right" Tag="{Binding ActivityID}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </Border>
+                </Canvas>
+
+                <!-- Course Selection ComboBox -->
+                <ComboBox x:Name="CourseCombo" Width="300" Height="40" Margin="10" Padding="10" FontSize="16" BorderBrush="#4A90E2" BorderThickness="2" Background="White" Visibility="Collapsed" SelectionChanged="CourseCombo_SelectionChanged">
+                    <!-- The ComboBox will be populated with the available courses -->
+                </ComboBox>
+
+                <!-- Student Selection ComboBox -->
+                <ComboBox x:Name="StudentCombo" Width="300" Height="40" Margin="10" Padding="10" FontSize="16" BorderBrush="#4A90E2" BorderThickness="2" Background="White" Visibility="Collapsed" SelectionChanged="StudentCombo_SelectionChanged">
+                    <!-- The ComboBox will be populated with the students in the selected course -->
+                </ComboBox>
+
+                <!-- Sidebar for Grading Activities (Initially Hidden) -->
+                <Canvas x:Name="GradeEntrySidebar" HorizontalAlignment="Right" VerticalAlignment="Top" Width="350" Height="Auto" Visibility="Collapsed" Panel.ZIndex="10" Margin="0,0,0,0">
+                    <Border Background="#F5F5F5" Padding="10">
+                        <StackPanel>
+                            <!-- Title -->
+                            <TextBlock Text="Select a Student and Grade Activity" FontSize="18" FontWeight="Bold" Margin="10" Foreground="#333" />
+
+                            <!-- ListBox to display activities for grading -->
+                            <ListBox x:Name="ActivityGradeListBox" Width="300" Height="200" Margin="10" BorderBrush="#4A90E2" BorderThickness="2" Background="White" FontSize="14" Visibility="Collapsed">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding ActivityName}" />
+                                            <TextBox x:Name="GradeTextBox" Width="100" Height="30" Margin="5" />
+                                            <Button Content="Submit Grade" Width="100" Height="30" Margin="5" Click="SubmitGrade_Click"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </Border>
+                </Canvas>
+
+
+                <!-- Activity Button -->
                 <Button Content="ACTIVITIES" 
-                        FontSize="16"
-                        FontFamily="Montserrat"
-                        HorizontalAlignment="Left" Height="60" Margin="17,163,0,0" Grid.Row="1" VerticalAlignment="Top" Width="124" FontWeight="Bold"/>
+        FontSize="16"
+        FontFamily="Montserrat"
+        HorizontalAlignment="Left" Height="60" Margin="17,96,0,0" Grid.Row="1" VerticalAlignment="Top" Width="124" FontWeight="Bold" Click="Activity_Click"/>
                 <Button Content="GRADES" 
-                        FontSize="16"
-                        FontFamily="Montserrat"
-                        HorizontalAlignment="Left" Height="60" Margin="17,229,0,0" Grid.Row="1" VerticalAlignment="Top" Width="124" FontWeight="Bold"/>
+        FontSize="16"
+        FontFamily="Montserrat"
+        HorizontalAlignment="Left" Height="60" Margin="17,229,0,0" Grid.Row="1" VerticalAlignment="Top" Width="124" FontWeight="Bold" Click="Button_Click_6"/>
                 <Button Content="SIGN OUT" 
-                        FontSize="16"
-                        FontFamily="Montserrat"
-                        HorizontalAlignment="Left" Height="60" Margin="17,295,0,0" Grid.Row="1" VerticalAlignment="Top" Width="124" FontWeight="Bold"/>
+        FontSize="16"
+        FontFamily="Montserrat"
+        HorizontalAlignment="Left" Height="60" Margin="17,295,0,0" Grid.Row="1" VerticalAlignment="Top" Width="124" FontWeight="Bold" Click="Button_Click_5"/>
                 <Button Content="STUDENTS" 
-                        HorizontalAlignment="Left"
-                        FontSize="16"
-                        Height="72" 
-                        Margin="17,86,0,0" 
-                        Grid.Row="1" 
-                        VerticalAlignment="Top" 
-                        Width="124" FontWeight="Bold" Click="Button_Click_3"/>
+        HorizontalAlignment="Left"
+        FontSize="16"
+        Height="72" 
+        Margin="17,18,0,0" 
+        Grid.Row="1" 
+        VerticalAlignment="Top" 
+        Width="124" FontWeight="Bold" Click="Button_Click_3"/>
+
                 
 
-
             </Grid>
-
         </Border>
     </Border>
 </Window>
