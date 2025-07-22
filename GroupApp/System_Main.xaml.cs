@@ -21,10 +21,30 @@ namespace GroupApp
     /// </summary>
     public partial class System_Main : Window
     {
+        private string studentEmail;
+        private int studentId;
+
         public System_Main(string studentEmail)
         {
+            this.studentEmail = studentEmail;
+            this.studentId = GetStudentId(studentEmail); // Get and store studentId on initialization
             InitializeComponent();
             LoadStudentCourses(studentEmail);
+        }
+
+        private int GetStudentId(string email)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["DatabaseConnection"].ConnectionString;
+            string query = "SELECT StudentID FROM LogIn WHERE Username = @email";
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@email", email);
+                conn.Open();
+                object result = cmd.ExecuteScalar();
+                return result != null ? Convert.ToInt32(result) : -1;
+            }
         }
 
         private void LoadStudentCourses(string studentEmail)
@@ -130,6 +150,94 @@ namespace GroupApp
             window.Show();
             this.Close();
         }
+
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            ShowGradesPopup();
+        }
+
+        private void ShowGradesPopup()
+        {
+            try
+            {
+                string connectionString = ConfigurationManager.ConnectionStrings["DatabaseConnection"].ConnectionString;
+
+                string query = @"
+            SELECT 
+                c.CourseName,
+                ISNULL(SUM(CASE WHEN a.ActivityName LIKE 'CW%' THEN sa.Grade ELSE 0 END), 0) AS CourseWork,
+                ISNULL(SUM(CASE WHEN a.ActivityName LIKE 'Quiz%' THEN sa.Grade ELSE 0 END), 0) AS Quiz,
+                ISNULL(SUM(CASE WHEN a.ActivityName LIKE 'D%' THEN sa.Grade ELSE 0 END), 0) AS Discussion
+            FROM StudentCourses sc
+            JOIN Courses c ON sc.CourseID = c.CourseID
+            LEFT JOIN Activities a ON c.CourseID = a.CourseID
+            LEFT JOIN StudentActivities sa ON a.ActivityID = sa.ActivityID AND sa.StudentID = sc.StudentID
+            WHERE sc.StudentID = @studentId
+            GROUP BY c.CourseName
+            ORDER BY c.CourseName";
+
+                List<CourseGrade> courseGrades = new List<CourseGrade>();
+
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@studentId", studentId);
+                    conn.Open();
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            double courseWork = Convert.ToDouble(reader["CourseWork"]);
+                            double quiz = Convert.ToDouble(reader["Quiz"]);
+                            double discussion = Convert.ToDouble(reader["Discussion"]);
+
+                            double totalPercentage = 0;
+                            bool hasGrades = courseWork + quiz + discussion > 0;
+
+                            if (hasGrades)
+                            {
+                                totalPercentage = (courseWork * 0.4) + (quiz * 0.5) + (discussion * 0.1);
+                            }
+
+                            courseGrades.Add(new CourseGrade
+                            {
+                                CourseName = reader.GetString(0),
+                                CourseWork = courseWork,
+                                Quiz = quiz,
+                                Discussion = discussion,
+                                TotalPercentage = Math.Round(totalPercentage, 2),
+                                PointEquivalent = hasGrades ? CalculatePointEquivalent(totalPercentage) : "No grades yet"
+                            });
+                        }
+                    }
+                }
+
+                GradesWindow gradesWindow = new GradesWindow(courseGrades);
+                gradesWindow.Owner = this;
+                gradesWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading grades: {ex.Message}");
+            }
+        }
+        private string CalculatePointEquivalent(double percentage)
+        {
+            if (percentage >= 96) return "1.00";
+            if (percentage >= 92) return "1.25";
+            if (percentage >= 88) return "1.50";
+            if (percentage >= 85) return "1.75";
+            if (percentage >= 82) return "2.00";
+            if (percentage >= 79) return "2.25";
+            if (percentage >= 76) return "2.50";
+            if (percentage >= 73) return "2.75";
+            if (percentage >= 70) return "3.00";
+            return "5.00";
+        }
+
     }
+    
 
 }

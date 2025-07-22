@@ -1,0 +1,18 @@
+﻿<Window x:Class="GroupApp.GradesWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="My Grades" Height="450" Width="800"
+        WindowStartupLocation="CenterOwner">
+    <Grid>
+        <DataGrid x:Name="GradesDataGrid" AutoGenerateColumns="False" Margin="10">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Course" Binding="{Binding CourseName}" Width="*"/>
+                <DataGridTextColumn Header="Course Work (40%)" Binding="{Binding CourseWork, StringFormat={}{0:N2}%}" Width="*"/>
+                <DataGridTextColumn Header="Quiz (50%)" Binding="{Binding Quiz, StringFormat={}{0:N2}%}" Width="*"/>
+                <DataGridTextColumn Header="Discussion (10%)" Binding="{Binding Discussion, StringFormat={}{0:N2}%}" Width="*"/>
+                <DataGridTextColumn Header="Total" Binding="{Binding TotalPercentage, StringFormat={}{0:N2}%}" Width="*"/>
+                <DataGridTextColumn Header="Point Equivalent" Binding="{Binding PointEquivalent}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>

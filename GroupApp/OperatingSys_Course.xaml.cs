@@ -152,5 +152,142 @@ namespace GroupApp
             // Load the activities
             LoadCourseActivities(courseId, "Quiz");
         }
+
+        private void ViewAnnouncements_Click(object sender, RoutedEventArgs e)
+        {
+            LoadCourseAnnouncements();
+            AnnouncementsPopup.IsOpen = true;
+        }
+
+        private void CloseAnnouncementsPopup_Click(object sender, RoutedEventArgs e)
+        {
+            AnnouncementsPopup.IsOpen = false;
+        }
+
+        private void LoadCourseAnnouncements()
+        {
+            try
+            {
+                string connectionString = ConfigurationManager.ConnectionStrings["DatabaseConnection"].ConnectionString;
+                string query = @"SELECT a.AnnouncementText, a.PostedDate, a.PostedBy 
+                        FROM Announcements a
+                        INNER JOIN StudentCourses sc ON a.CourseID = sc.CourseID
+                        WHERE sc.StudentID = @studentId
+                        AND a.CourseID = @courseId
+                        ORDER BY a.PostedDate DESC";
+
+                AnnouncementsListBox.Items.Clear();
+
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    // Get student ID from email
+                    int studentId = GetStudentId(studentEmail);
+
+                    cmd.Parameters.AddWithValue("@studentId", studentId);
+                    cmd.Parameters.AddWithValue("@courseId", courseId);
+
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            AnnouncementsListBox.Items.Add(new
+                            {
+                                AnnouncementText = reader.GetString(0),
+                                PostedDate = reader.GetDateTime(1),
+                                PostedBy = reader.GetString(2)
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading announcements: {ex.Message}");
+            }
+        }
+
+        private int GetStudentId(string email)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["DatabaseConnection"].ConnectionString;
+            string query = "SELECT StudentID FROM LogIn WHERE Username = @email";
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@email", email);
+                conn.Open();
+                return (int)cmd.ExecuteScalar();
+            }
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void GradebookButton_Click(object sender, RoutedEventArgs e)
+        {
+            LoadGradebookData();
+            GradebookPopup.IsOpen = true;
+        }
+
+        private void CloseGradebookPopup_Click(object sender, RoutedEventArgs e)
+        {
+            GradebookPopup.IsOpen = false;
+        }
+
+        private void LoadGradebookData()
+        {
+            try
+            {
+                string connectionString = ConfigurationManager.ConnectionStrings["DatabaseConnection"].ConnectionString;
+                string query = @"SELECT a.ActivityName, a.ScoreLimit, sa.Grade
+                FROM StudentActivities sa
+                JOIN Activities a ON sa.ActivityID = a.ActivityID
+                JOIN StudentCourses sc ON a.CourseID = sc.CourseID
+                WHERE sc.StudentID = @studentId
+                AND a.CourseID = @courseId
+                ORDER BY a.DatePosted DESC";
+
+                GradebookListView.Items.Clear();
+
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    int studentId = GetStudentId(studentEmail);
+
+                    cmd.Parameters.AddWithValue("@studentId", studentId);
+                    cmd.Parameters.AddWithValue("@courseId", courseId);
+
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int scoreLimit = reader.GetInt32(1);
+                            int grade = reader.IsDBNull(2) ? 0 : reader.GetInt32(2);
+                            double percentage = scoreLimit == 0 ? 0 : Math.Round((double)grade / scoreLimit * 100, 2);
+
+                            GradebookListView.Items.Add(new
+                            {
+                                ActivityName = reader.GetString(0),
+                                ScoreLimit = scoreLimit,
+                                Grade = grade,
+                                Percentage = percentage + "%"  // Add percentage column
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading gradebook: {ex.Message}");
+            }
+        }
+
+
+
     }
 }

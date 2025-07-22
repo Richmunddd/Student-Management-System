@@ -26,8 +26,74 @@
         <StackPanel Grid.Column="0" Background="#2E2E2E" VerticalAlignment="Stretch">
             <Button Content="Content" Foreground="White" Background="#444444" Height="50" Margin="0,10" FontSize="16" FontWeight="Bold" BorderBrush="Black" Click="ContentButton_Click"/>
             <Button Content="Attendance" Foreground="White" Background="#444444" Height="50" Margin="0,10" FontSize="16" FontWeight="Bold" BorderBrush="Black"/>
-            <Button Content="Announcements" Foreground="White" Background="#444444" Height="50" Margin="0,10" FontSize="16" FontWeight="Bold" BorderBrush="Black"/>
-            <Button Content="Gradebook" Foreground="White" Background="#444444" Height="50" Margin="0,10" FontSize="16" FontWeight="Bold" BorderBrush="Black"/>
+            <!-- Add this with your other buttons -->
+            <Button Content="ANNOUNCEMENTS" 
+        Height="50" Margin="0,10" 
+        FontSize="16" FontWeight="Bold" 
+        Background="#FFD700" Foreground="Black" 
+        Click="ViewAnnouncements_Click"
+        HorizontalAlignment="Stretch"/>
+
+            <!-- Announcements Popup -->
+            <Popup x:Name="AnnouncementsPopup" Placement="Center" IsOpen="False">
+                <Border Background="LightYellow" BorderBrush="Gold" BorderThickness="2"
+            CornerRadius="5" Padding="10" Width="400" MaxHeight="300">
+                    <StackPanel>
+                        <Button Content="X" HorizontalAlignment="Right" Background="Transparent"
+                    BorderThickness="0" Click="CloseAnnouncementsPopup_Click"/>
+                        <TextBlock Text="Course Announcements" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
+                        <ListBox x:Name="AnnouncementsListBox" Height="200" Background="LightYellow"
+                    BorderThickness="0" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="5">
+                                        <TextBlock Text="{Binding AnnouncementText}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding PostedDate, StringFormat='Posted: {0:g}'}" 
+                                          FontStyle="Italic" Foreground="Gray" Margin="0,0,10,0"/>
+                                            <TextBlock Text="{Binding PostedBy, StringFormat='By: {0}'}" 
+                                          FontStyle="Italic" Foreground="Gray"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+            </Popup>
+
+            <Button Content="Gradebook" Foreground="White" Background="#444444" Height="50" Margin="0,10" FontSize="16" FontWeight="Bold" BorderBrush="Black" Click="GradebookButton_Click" />
+
+            <!-- Gradebook Popup -->
+            <Popup x:Name="GradebookPopup" Placement="Center" IsOpen="False">
+                <Border Background="White" BorderBrush="#4A90E2" BorderThickness="2"
+            CornerRadius="5" Padding="10" Width="500" MaxHeight="400">
+                    <StackPanel>
+                        <Button Content="X" HorizontalAlignment="Right" Background="Transparent"
+                    BorderThickness="0" Click="CloseGradebookPopup_Click"/>
+                        <TextBlock Text="My Gradebook" FontWeight="Bold" FontSize="18" Margin="0,0,0,10"/>
+
+                        <ListView x:Name="GradebookListView" Height="300" Width="450">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Activity" Width="200" DisplayMemberBinding="{Binding ActivityName}"/>
+                                    <GridViewColumn Header="Score Limit" Width="100" DisplayMemberBinding="{Binding ScoreLimit}"/>
+                                    <GridViewColumn Header="Your Score" Width="100" DisplayMemberBinding="{Binding Grade}"/>
+                                    <GridViewColumn Header="Percentage" Width="100">
+                                        <GridViewColumn.DisplayMemberBinding>
+                                            <MultiBinding StringFormat="{}{0:P0}">
+                                                <Binding Path="Grade"/>
+                                                <Binding Path="ScoreLimit"/>
+                                            </MultiBinding>
+                                        </GridViewColumn.DisplayMemberBinding>
+                                    </GridViewColumn>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </StackPanel>
+                </Border>
+            </Popup>
+
         </StackPanel>
 
         <!-- Content Area -->
@@ -41,8 +107,8 @@
 
                 <!-- Header with Course Name -->
                 <StackPanel Orientation="Horizontal" Background="#FFFFFF" Margin="0,10" Grid.Column="0">
-                    <Button Content="X" Width="50" Height="50" Background="#FF6A00" Foreground="White" FontWeight="Bold" Margin="0,0,10,0" Click="Button_Click_1" />
-                    <TextBlock Text="Operating Systems" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="10,0"/>
+                    <Button Content="X" Width="50" Height="50" Background="Violet" Foreground="White" FontWeight="Bold" Margin="0,0,10,0" Click="Button_Click_1" />
+                    <TextBlock Text="OPERATING SYSTEMS" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="10,0"/>
                     <Button Content="OPEN" Width="70" Height="30" Background="#3C8D0D" Foreground="White" HorizontalAlignment="Right" Margin="10,0"/>
                 </StackPanel>
 

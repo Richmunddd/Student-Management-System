@@ -8,8 +8,8 @@ namespace GroupApp
 {
     public class Student
     {
-        public string Username { get; set; }
-        public string FullName { get; set; }
+        public required string Username { get; set; }
+        public required string FullName { get; set; }
         public int StudentId { get; set; }
         public int CourseId { get; set; }
 

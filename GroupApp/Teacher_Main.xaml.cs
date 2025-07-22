@@ -1,6 +1,9 @@
 ﻿using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.DirectoryServices.ActiveDirectory;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,13 +15,14 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using System.Configuration;
 
 namespace GroupApp
 {
     /// <summary>
     /// Interaction logic for Teacher_Main.xaml
     /// </summary>
+    /// 
+    
     public partial class Teacher_Main : Window
     {
         private string teacherEmail; // Store the email of the logged-in teacher
@@ -35,6 +39,8 @@ namespace GroupApp
             teacherEmail = username; // Initialize the teacher's email
 
         }
+
+        
 
         private void LoadCourses()
         {
@@ -214,98 +220,222 @@ namespace GroupApp
         // Event handler for deleting an activity
         // Delete activity click handler
         // Event handler for deleting an activity
+        // Class level variable
+        private List<Course> _availableCourses = new List<Course>();
+
         private void ShowDeleteActivitySidebar(object sender, RoutedEventArgs e)
         {
-            // Show the Delete Activity Sidebar
-            DeleteActivitySidebar.Visibility = Visibility.Visible;
+            try
+            {
+                // Hide other panels
+                ActivitySidebar.Visibility = Visibility.Collapsed;
+                GradeEntrySidebar.Visibility = Visibility.Collapsed;
 
-            // Fetch and display the activities in the ActivityDeleteListBox
-            LoadActivitiesForDeletion();
+                // Show delete sidebar
+                DeleteActivitySidebar.Visibility = Visibility.Visible;
+
+                // Initialize the course combo box
+                InitializeDeleteActivityCourseCombo();
+
+                // Hide activities list initially
+                ActivityDeleteListBox.Visibility = Visibility.Collapsed;
+                NoActivitiesText.Visibility = Visibility.Collapsed;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error showing delete sidebar: {ex.Message}");
+            }
         }
 
-        // This method will load activities for the selected course into the DeleteActivitySidebar
-        private void LoadActivitiesForDeletion()
+        private void InitializeDeleteActivityCourseCombo()
         {
-            string connectionString = ConfigurationManager.ConnectionStrings["DatabaseConnection"].ConnectionString;
-
-            // Assuming you have the courseId stored somewhere, e.g., from the selected course in the UI
-            int courseId = 1;  // Use the actual course ID from the selected course
-
-            string query = @"
-    SELECT ActivityID, ActivityName
-    FROM Activities
-    WHERE CourseID = @courseId";
-
-            // Clear the ListBox before loading new items
-            ActivityDeleteListBox.Items.Clear();
-
-            using (SqlConnection conn = new SqlConnection(connectionString))
-            using (SqlCommand cmd = new SqlCommand(query, conn))
+            try
             {
-                cmd.Parameters.AddWithValue("@courseId", courseId);
-                conn.Open();
+                string connectionString = ConfigurationManager.ConnectionStrings["DatabaseConnection"].ConnectionString;
+                string query = "SELECT CourseID, CourseName FROM Courses";
 
-                using (SqlDataReader reader = cmd.ExecuteReader())
+                _availableCourses.Clear();
+                DeleteActivityCourseCombo.Items.Clear();
+
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    while (reader.Read())
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        string activityName = reader.GetString(1);
-                        int activityId = reader.GetInt32(0);
-
-                        // Add each activity to the ListBox with a Delete button
-                        ActivityDeleteListBox.Items.Add(new
+                        while (reader.Read())
                         {
-                            ActivityName = activityName,
-                            ActivityID = activityId
-                        });
+                            _availableCourses.Add(new Course
+                            {
+                                CourseID = reader.GetInt32(0),
+                                CourseName = reader.IsDBNull(1) ? string.Empty : reader.GetString(1)
+                            });
+                        }
+                    }
+                }
+
+                DeleteActivityCourseCombo.ItemsSource = _availableCourses;
+
+                if (_availableCourses.Count > 0)
+                {
+                    DeleteActivityCourseCombo.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading courses: {ex.Message}");
+            }
+        }
+
+        private void DeleteActivityCourseCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (DeleteActivityCourseCombo.SelectedItem is Course selectedCourse)
+            {
+                LoadActivitiesForDeletion(selectedCourse.CourseID);
+            }
+        }
+
+        private void LoadActivitiesForDeletion(int courseId)
+        {
+            try
+            {
+                string connectionString = ConfigurationManager.ConnectionStrings["DatabaseConnection"].ConnectionString;
+                string query = @"
+SELECT ActivityID, ActivityName, DatePosted
+FROM Activities
+WHERE CourseID = @courseId
+ORDER BY DatePosted DESC";
+
+                ActivityDeleteListBox.Items.Clear();
+
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@courseId", courseId);
+                    conn.Open();
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        bool hasActivities = false;
+
+                        while (reader.Read())
+                        {
+                            hasActivities = true;
+                            ActivityDeleteListBox.Items.Add(new
+                            {
+                                ActivityID = reader.GetInt32(0),
+                                ActivityName = reader.IsDBNull(1) ? "Unnamed Activity" : reader.GetString(1),
+                                DatePosted = reader.GetDateTime(2)
+                            });
+                        }
+
+                        // Show appropriate UI based on whether activities exist
+                        ActivityDeleteListBox.Visibility = hasActivities ? Visibility.Visible : Visibility.Collapsed;
+                        NoActivitiesText.Visibility = hasActivities ? Visibility.Collapsed : Visibility.Visible;
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading activities: {ex.Message}");
+            }
         }
+
+        private int GetSelectedCourseId()
+        {
+            // Implement based on how you select courses in your UI
+            // Example if you have a course selection button or combo box:
+            if (CourseCombo.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is int courseId)
+            {
+                return courseId;
+            }
+
+            // Or if you select courses by clicking buttons:
+            // return selectedCourseId; // (you'll need to set this when selecting a course)
+
+            return -1; // Indicates no course selected
+        }
+
         // Toggle to collapse or show the Delete Activity Sidebar
         private void ToggleDeleteActivitySidebar(object sender, RoutedEventArgs e)
         {
             // Toggle the visibility of the DeleteActivitySidebar
             DeleteActivitySidebar.Visibility = (DeleteActivitySidebar.Visibility == Visibility.Collapsed) ? Visibility.Visible : Visibility.Collapsed;
         }
-        // Event handler to delete the activity
+
         private void DeleteActivity_Click(object sender, RoutedEventArgs e)
         {
-            var button = sender as Button;
-            if (button == null) return;
-
-            int activityId = (int)button.Tag;  // Get the ActivityID from the button's Tag
-
-            // Confirm the deletion with the teacher
-            var result = MessageBox.Show("Are you sure you want to delete this activity?", "Confirm Deletion", MessageBoxButton.YesNo);
-            if (result == MessageBoxResult.Yes)
+            try
             {
-                DeleteActivityFromDatabase(activityId);
+                var button = sender as Button;
+                if (button?.Tag == null || !(button.Tag is int activityId))
+                {
+                    MessageBox.Show("Invalid activity selected");
+                    return;
+                }
+
+                var result = MessageBox.Show(
+                    "Are you sure you want to delete this activity?",
+                    "Confirm Deletion",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    DeleteActivityFromDatabase(activityId);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error during deletion: {ex.Message}");
             }
         }
 
-        // This method deletes the activity from the database
         private void DeleteActivityFromDatabase(int activityId)
         {
-            string connectionString = ConfigurationManager.ConnectionStrings["DatabaseConnection"].ConnectionString;
-            string query = "DELETE FROM Activities WHERE ActivityID = @activityId";
-
-            using (SqlConnection conn = new SqlConnection(connectionString))
-            using (SqlCommand cmd = new SqlCommand(query, conn))
+            try
             {
-                cmd.Parameters.AddWithValue("@activityId", activityId);
-                conn.Open();
+                string connectionString = ConfigurationManager.ConnectionStrings["DatabaseConnection"].ConnectionString;
 
-                int rowsAffected = cmd.ExecuteNonQuery();
-                if (rowsAffected > 0)
+                using (SqlConnection conn = new SqlConnection(connectionString))
                 {
-                    MessageBox.Show("Activity deleted successfully!");
-                    LoadActivitiesForDeletion();  // Refresh the list of activities
+                    conn.Open();
+
+                    // First delete from StudentActivities (if needed)
+                    string deleteGradesQuery = "DELETE FROM StudentActivities WHERE ActivityID = @activityId";
+                    using (SqlCommand cmd = new SqlCommand(deleteGradesQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@activityId", activityId);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // Then delete the activity
+                    string deleteActivityQuery = "DELETE FROM Activities WHERE ActivityID = @activityId";
+                    using (SqlCommand cmd = new SqlCommand(deleteActivityQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@activityId", activityId);
+                        int rowsAffected = cmd.ExecuteNonQuery();
+
+                        if (rowsAffected > 0)
+                        {
+                            MessageBox.Show("Activity deleted successfully!");
+
+                            // Refresh the activities list for the current course
+                            if (DeleteActivityCourseCombo.SelectedItem is Course selectedCourse)
+                            {
+                                LoadActivitiesForDeletion(selectedCourse.CourseID);
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("Activity not found or already deleted.");
+                        }
+                    }
                 }
-                else
-                {
-                    MessageBox.Show("Activity not found or could not be deleted.");
-                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error deleting activity: {ex.Message}");
             }
         }
 
@@ -376,20 +506,48 @@ namespace GroupApp
                 }
             }
         }
+        private void ResetGradingUI()
+        {
+            // Hide all grading-related UI elements
+            GradeEntrySidebar.Visibility = Visibility.Collapsed;
+            CourseCombo.Visibility = Visibility.Collapsed;
+            StudentCombo.Visibility = Visibility.Collapsed;
+
+            // Clear all selections and data
+            CourseCombo.SelectedItem = null;
+            StudentCombo.SelectedItem = null;
+            ActivityGradeListBox.ItemsSource = null;
+            SelectedStudentText.Text = string.Empty;
+        }
 
         // When the Grades button is clicked, show the ComboBox to select a course
         private void Button_Click_6(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                // Show the ComboBox to select a course
-                CourseCombo.Visibility = Visibility.Visible;
-                LoadCoursesForComboBox();  // Load the courses into the ComboBox
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error: {ex.Message}");
-            }
+            // First reset any existing grading UI
+            ResetGradingUI();
+
+            // Then show just the course selection
+            CourseCombo.Visibility = Visibility.Visible;
+
+            // Load courses
+            LoadCoursesForComboBox();
+        }
+
+        private void ToggleGradeEntrySidebar(object sender, RoutedEventArgs e)
+        {
+            // Hide the grade entry sidebar
+            GradeEntrySidebar.Visibility = Visibility.Collapsed;
+
+            // Also hide the course and student combo boxes
+            CourseCombo.Visibility = Visibility.Collapsed;
+            StudentCombo.Visibility = Visibility.Collapsed;
+
+            // Clear the selections
+            CourseCombo.SelectedItem = null;
+            StudentCombo.SelectedItem = null;
+
+            // Clear the activities list
+            ActivityGradeListBox.ItemsSource = null;
         }
 
         // Load available courses into the ComboBox
@@ -398,7 +556,9 @@ namespace GroupApp
             try
             {
                 string connectionString = ConfigurationManager.ConnectionStrings["DatabaseConnection"].ConnectionString;
-                string query = "SELECT CourseID, CourseName FROM Courses";  // Fetch courses for the teacher
+                string query = "SELECT CourseID, CourseName FROM Courses";
+
+                CourseCombo.Items.Clear();
 
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 using (SqlCommand cmd = new SqlCommand(query, conn))
@@ -406,24 +566,77 @@ namespace GroupApp
                     conn.Open();
                     SqlDataReader reader = cmd.ExecuteReader();
 
-                    // Clear the ComboBox before adding new courses
-                    CourseCombo.Items.Clear();
-
-                    // Populate ComboBox with courses
                     while (reader.Read())
                     {
-                        ComboBoxItem item = new ComboBoxItem
+                        CourseCombo.Items.Add(new ComboBoxItem
                         {
-                            Content = reader.GetString(1), // Course name
-                            Tag = reader.GetInt32(0) // CourseID
-                        };
-                        CourseCombo.Items.Add(item);
+                            Content = reader.GetString(1),
+                            Tag = reader.GetInt32(0)
+                        });
                     }
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error loading courses: {ex.Message}");
+            }
+        }
+        
+
+        // Load students for the selected course
+        private void LoadStudentsForCourse(int courseId)
+        {
+            try
+            {
+                string connectionString = ConfigurationManager.ConnectionStrings["DatabaseConnection"].ConnectionString;
+                string query = @"
+            SELECT l.StudentID, l.FULLName 
+            FROM LogIn l
+            INNER JOIN StudentCourses sc ON l.StudentID = sc.StudentID
+            WHERE sc.CourseID = @courseId";
+
+                StudentCombo.Items.Clear();
+
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@courseId", courseId);
+                    conn.Open();
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        StudentCombo.Items.Add(new ComboBoxItem
+                        {
+                            Content = reader.GetString(1),
+                            Tag = reader.GetInt32(0)
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading students: {ex.Message}");
+            }
+        }
+
+        // When a student is selected from the combo box
+        private void StudentCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (StudentCombo.SelectedItem != null)
+                {
+                    var selectedStudent = (ComboBoxItem)StudentCombo.SelectedItem;
+                    int studentId = (int)selectedStudent.Tag;
+
+                    // Load and show activities/grades for selected student
+                    LoadActivitiesForStudent(studentId);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error selecting student: {ex.Message}");
             }
         }
 
@@ -434,99 +647,19 @@ namespace GroupApp
             {
                 if (CourseCombo.SelectedItem != null)
                 {
-                    // Get the selected course
-                    var selectedItem = (ComboBoxItem)CourseCombo.SelectedItem;
-                    int selectedCourseId = (int)selectedItem.Tag;
+                    var selectedCourse = (ComboBoxItem)CourseCombo.SelectedItem;
+                    int courseId = (int)selectedCourse.Tag;
 
-                    // Load students for the selected course
-                    LoadStudentsForCourse(selectedCourseId);
-
-                    // Hide the ComboBox after selecting a course
-                    CourseCombo.Visibility = Visibility.Collapsed;
-
-                    // Show the student selection ComboBox
+                    // Show student selection
                     StudentCombo.Visibility = Visibility.Visible;
+
+                    // Load students for selected course
+                    LoadStudentsForCourse(courseId);
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error selecting course: {ex.Message}");
-            }
-        }
-
-        // Load students for the selected course
-        // Load students for the selected course
-        // Load students for the selected course
-        private void LoadStudentsForCourse(int courseId)
-        {
-            try
-            {
-                string connectionString = ConfigurationManager.ConnectionStrings["DatabaseConnection"].ConnectionString;
-
-                // Updated query to ensure we only get students enrolled in this course
-                string query = @"
-        SELECT l.StudentID, l.FULLName
-        FROM [LogIn] l
-        INNER JOIN [StudentCourses] sc ON l.StudentID = sc.StudentID
-        WHERE sc.CourseID = @courseId";
-
-                using (SqlConnection conn = new SqlConnection(connectionString))
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@courseId", courseId);
-                    conn.Open();
-                    SqlDataReader reader = cmd.ExecuteReader();
-
-                    StudentCombo.Items.Clear();
-
-                    while (reader.Read())
-                    {
-                        ComboBoxItem item = new ComboBoxItem
-                        {
-                            Content = reader.GetString(1), // FullName
-                            Tag = reader.GetInt32(0) // StudentID
-                        };
-                        StudentCombo.Items.Add(item);
-                    }
-
-                    if (StudentCombo.Items.Count == 0)
-                    {
-                        MessageBox.Show("No students found for this course.");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading students: {ex.Message}");
-            }
-        }
-
-
-
-        // When a student is selected, load the activities for grading
-        private void StudentCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            try
-            {
-                if (StudentCombo.SelectedItem != null)
-                {
-                    // Get the selected student
-                    var selectedItem = (ComboBoxItem)StudentCombo.SelectedItem;
-                    int selectedStudentId = (int)selectedItem.Tag;
-
-                    // Load activities for the selected student
-                    LoadActivitiesForStudent(selectedStudentId);
-
-                    // Hide the ComboBox after selecting a student
-                    StudentCombo.Visibility = Visibility.Collapsed;
-
-                    // Show the grade entry sidebar
-                    GradeEntrySidebar.Visibility = Visibility.Visible;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error selecting student: {ex.Message}");
             }
         }
 
@@ -541,22 +674,25 @@ namespace GroupApp
                     return;
                 }
 
+                // Get the selected student's name
+                var selectedStudent = (ComboBoxItem)StudentCombo.SelectedItem;
+                SelectedStudentText.Text = $"Student: {selectedStudent.Content}";
+
                 int courseId = (int)((ComboBoxItem)CourseCombo.SelectedItem).Tag;
                 string connectionString = ConfigurationManager.ConnectionStrings["DatabaseConnection"].ConnectionString;
 
-                // Get all activities for the course, and include grade if it exists
                 string query = @"
         SELECT 
             a.ActivityID, 
             a.ActivityName, 
             a.ScoreLimit,
-            COALESCE(sa.Grade, -1) AS Grade
+            ISNULL(sa.Grade, 0) AS Grade
         FROM Activities a
         LEFT JOIN StudentActivities sa ON a.ActivityID = sa.ActivityID AND sa.StudentID = @studentId
         WHERE a.CourseID = @courseId
         ORDER BY a.DatePosted DESC";
 
-                ActivityGradeListBox.Items.Clear();
+                var activities = new List<ActivityGradeModel>();
 
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 using (SqlCommand cmd = new SqlCommand(query, conn))
@@ -567,56 +703,27 @@ namespace GroupApp
 
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        if (!reader.HasRows)
-                        {
-                            MessageBox.Show("No activities available for this course yet.");
-                            return;
-                        }
-
                         while (reader.Read())
                         {
-                            int activityId = reader.GetInt32(0);
-                            string activityName = reader.GetString(1);
-                            int scoreLimit = reader.GetInt32(2);
-                            int grade = reader.GetInt32(3);
-
-                            // Create UI elements for each activity
-                            StackPanel panel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(5) };
-
-                            // Activity info
-                            TextBlock activityText = new TextBlock
+                            activities.Add(new ActivityGradeModel
                             {
-                                Text = $"{activityName} (Max: {scoreLimit})",
-                                Width = 250,
-                                VerticalAlignment = VerticalAlignment.Center
-                            };
-
-                            // Grade input
-                            TextBox gradeBox = new TextBox
-                            {
-                                Text = grade >= 0 ? grade.ToString() : "",
-                                Width = 60,
-                                Margin = new Thickness(10, 0, 10, 0)
-                            };
-
-                            // Submit button
-                            Button submitButton = new Button
-                            {
-                                Content = grade >= 0 ? "Update" : "Submit",
-                                Tag = activityId,
-                                Width = 80,
-                                Margin = new Thickness(0, 0, 10, 0)
-                            };
-                            submitButton.Click += SubmitGrade_Click;
-
-                            panel.Children.Add(activityText);
-                            panel.Children.Add(gradeBox);
-                            panel.Children.Add(submitButton);
-
-                            ActivityGradeListBox.Items.Add(panel);
+                                ActivityID = reader.GetInt32(0),
+                                ActivityName = reader.GetString(1),
+                                ScoreLimit = reader.GetInt32(2),
+                                Grade = reader.GetInt32(3)
+                            });
                         }
                     }
                 }
+
+                if (activities.Count == 0)
+                {
+                    MessageBox.Show("No activities found for this student/course.");
+                    return;
+                }
+
+                ActivityGradeListBox.ItemsSource = activities;
+                GradeEntrySidebar.Visibility = Visibility.Visible;
             }
             catch (Exception ex)
             {
@@ -642,11 +749,11 @@ namespace GroupApp
                 int studentId = (int)((ComboBoxItem)StudentCombo.SelectedItem).Tag;
 
                 // Get the parent StackPanel
-                var panel = button.Parent as StackPanel;
-                if (panel == null) return;
+                var stackPanel = button.Parent as StackPanel;
+                if (stackPanel == null) return;
 
                 // Find the TextBox in the panel
-                TextBox gradeBox = panel.Children.OfType<TextBox>().FirstOrDefault();
+                var gradeBox = stackPanel.Children.OfType<TextBox>().FirstOrDefault();
                 if (gradeBox == null || string.IsNullOrWhiteSpace(gradeBox.Text))
                 {
                     MessageBox.Show("Please enter a grade.");
@@ -665,20 +772,14 @@ namespace GroupApp
                 {
                     conn.Open();
 
-                    // First check if the grade exists
-                    string checkQuery = @"
-            SELECT COUNT(*) 
-            FROM StudentActivities 
-            WHERE StudentID = @studentId AND ActivityID = @activityId";
-
+                    string checkQuery = "SELECT COUNT(*) FROM StudentActivities WHERE StudentID = @studentId AND ActivityID = @activityId";
                     using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
                     {
                         checkCmd.Parameters.AddWithValue("@studentId", studentId);
                         checkCmd.Parameters.AddWithValue("@activityId", activityId);
-                        bool gradeExists = (int)checkCmd.ExecuteScalar() > 0;
+                        bool exists = (int)checkCmd.ExecuteScalar() > 0;
 
-                        // Use appropriate query based on whether grade exists
-                        string query = gradeExists ?
+                        string query = exists ?
                             "UPDATE StudentActivities SET Grade = @grade WHERE StudentID = @studentId AND ActivityID = @activityId" :
                             "INSERT INTO StudentActivities (StudentID, ActivityID, Grade) VALUES (@studentId, @activityId, @grade)";
 
@@ -692,7 +793,7 @@ namespace GroupApp
                             if (rowsAffected > 0)
                             {
                                 MessageBox.Show("Grade saved successfully!");
-                                // Refresh the activities list
+                                // Refresh the list
                                 LoadActivitiesForStudent(studentId);
                             }
                         }
@@ -731,10 +832,155 @@ namespace GroupApp
             }
         }
 
+        
 
 
 
 
+        /////
+        ///
+        private void AnnouncementButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Your existing code to show the sidebar
+            AnnouncementSidebar.Visibility = Visibility.Visible;
+            LoadCoursesForAnnouncement();
+        }
+
+        private void LoadCoursesForAnnouncement()
+        {
+            try
+            {
+                string connectionString = ConfigurationManager.ConnectionStrings["DatabaseConnection"].ConnectionString;
+                string query = "SELECT CourseID, CourseName FROM Courses";
+
+                AnnouncementCourseCombo.Items.Clear();
+
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            AnnouncementCourseCombo.Items.Add(new
+                            {
+                                CourseID = reader.GetInt32(0),
+                                CourseName = reader.GetString(1)
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading courses: {ex.Message}");
+            }
+        }
+
+        // Placeholder text handlers
+        private void AnnouncementTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (AnnouncementTextBox.Text == "Enter your announcement here...")
+            {
+                AnnouncementTextBox.Text = "";
+                AnnouncementTextBox.Foreground = Brushes.Black;
+            }
+        }
+
+        private void AnnouncementTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(AnnouncementTextBox.Text))
+            {
+                AnnouncementTextBox.Text = "Enter your announcement here...";
+                AnnouncementTextBox.Foreground = Brushes.Gray;
+            }
+        }
+
+        // Post announcement
+        private void PostAnnouncement_Click(object sender, RoutedEventArgs e)
+        {
+            if (AnnouncementCourseCombo.SelectedItem == null)
+            {
+                MessageBox.Show("Please select a course first");
+                return;
+            }
+
+            if (AnnouncementTextBox.Text == "Enter your announcement here..." ||
+                string.IsNullOrWhiteSpace(AnnouncementTextBox.Text))
+            {
+                MessageBox.Show("Please enter announcement text");
+                return;
+            }
+
+            try
+            {
+                dynamic selectedCourse = AnnouncementCourseCombo.SelectedItem;
+                int courseId = selectedCourse.CourseID;
+                string announcementText = AnnouncementTextBox.Text;
+                string postedBy = teacherEmail; // Make sure teacherEmail is set
+
+                string connectionString = ConfigurationManager.ConnectionStrings["DatabaseConnection"].ConnectionString;
+
+                // First check if table exists
+                string checkTableQuery = @"
+        IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Announcements')
+        BEGIN
+            CREATE TABLE Announcements (
+                AnnouncementID INT IDENTITY(1,1) PRIMARY KEY,
+                CourseID INT NOT NULL,
+                AnnouncementText NVARCHAR(MAX) NOT NULL,
+                PostedDate DATETIME NOT NULL,
+                PostedBy NVARCHAR(100) NOT NULL,
+                FOREIGN KEY (CourseID) REFERENCES Courses(CourseID)
+            )
+        END";
+
+                // Then insert the announcement
+                string insertQuery = @"
+        INSERT INTO Announcements 
+        (CourseID, AnnouncementText, PostedDate, PostedBy)
+        VALUES (@courseId, @text, @date, @teacher)";
+
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+
+                    // Create table if it doesn't exist
+                    using (SqlCommand cmd = new SqlCommand(checkTableQuery, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // Insert the announcement
+                    using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@courseId", courseId);
+                        cmd.Parameters.AddWithValue("@text", announcementText);
+                        cmd.Parameters.AddWithValue("@date", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@teacher", postedBy);
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                MessageBox.Show("Announcement posted successfully!");
+                AnnouncementTextBox.Text = "Enter your announcement here...";
+                AnnouncementTextBox.Foreground = Brushes.Gray;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error posting announcement: {ex.Message}\n\nFull error details:\n{ex.ToString()}");
+            }
+        }
+
+        // Close sidebar
+        private void CloseAnnouncementSidebar_Click(object sender, RoutedEventArgs e)
+        {
+            AnnouncementSidebar.Visibility = Visibility.Collapsed;
+            AnnouncementTextBox.Text = "Enter your announcement here...";
+            AnnouncementTextBox.Foreground = Brushes.Gray;
+        }
 
 
 

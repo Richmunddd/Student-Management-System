@@ -135,7 +135,7 @@
                 <Button Content="GRADES" 
                         FontSize="16"
                         FontFamily="Montserrat"
-                        HorizontalAlignment="Left" Height="60" Margin="17,151,0,0" Grid.Row="1" VerticalAlignment="Top" Width="124"/>
+                        HorizontalAlignment="Left" Height="60" Margin="17,151,0,0" Grid.Row="1" VerticalAlignment="Top" Width="124" Click="Button_Click_2"/>
                 <Button Content="SIGN OUT" 
                         FontSize="16"
                         FontFamily="Montserrat"
